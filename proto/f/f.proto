@@ -13,6 +13,15 @@ message FileUploadResponse {
   uint32 size = 2;
 }
 
+message FileDownloadRequest {
+
+}
+
+message FileDownloadResponse {
+
+}
+
 service FileService {
   rpc Upload(stream FileUploadRequest) returns(FileUploadResponse);
+  rpc Download(FileDownloadRequest) returns(stream FileDownloadResponse);
 }
