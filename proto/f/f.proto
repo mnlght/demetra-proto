@@ -9,18 +9,26 @@ message FileUploadRequest {
 }
 
 message FileUploadResponse {
-  string link = 1;
+  string key = 1;
   uint32 size = 2;
 }
 
-message FileDownloadRequest {
-  string id = 1;
-  string path = 2;
+message FileDownloadMultipleRequest {
+  string key = 1;
+  int32 part_number = 2;
+  int64 chunk_size = 3;
 }
 
-message FileDownloadResponse {
-  string file_name = 1;
-  bytes chunk = 2;
+message FileDownloadMultipleResponse {
+  bytes chunk = 1;
+}
+
+message FileDownloadSimpleRequest {
+  string key = 1;
+}
+
+message FileDownloadSimpleResponse {
+  bytes chunk = 1;
 }
 
 message FilesListRequest {
@@ -34,6 +42,7 @@ message FilesListResponse {
 
 service FileService {
   rpc Upload(stream FileUploadRequest) returns(FileUploadResponse);
-  rpc Download(FileDownloadRequest) returns(stream FileDownloadResponse);
+  rpc DownloadMultiple(FileDownloadMultipleRequest) returns(stream FileDownloadMultipleResponse);
+  rpc DownloadSimple(FileDownloadSimpleRequest) returns(stream FileDownloadSimpleResponse);
   rpc List(FilesListRequest) returns(FilesListResponse);
 }
