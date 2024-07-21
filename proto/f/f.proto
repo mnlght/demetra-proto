@@ -41,7 +41,8 @@ message FilesListResponse {
 }
 
 service FileService {
-  rpc Upload(stream FileUploadRequest) returns(FileUploadResponse);
+  rpc UploadSimple(stream FileUploadRequest) returns(FileUploadResponse);
+  rpc UploadMultiple(stream FileUploadRequest) returns(FileUploadResponse);
   rpc DownloadMultiple(FileDownloadMultipleRequest) returns(stream FileDownloadMultipleResponse);
   rpc DownloadSimple(FileDownloadSimpleRequest) returns(stream FileDownloadSimpleResponse);
   rpc List(FilesListRequest) returns(FilesListResponse);

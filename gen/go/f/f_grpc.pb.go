@@ -19,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion8
 
 const (
-	FileService_Upload_FullMethodName           = "/f.FileService/Upload"
+	FileService_UploadSimple_FullMethodName     = "/f.FileService/UploadSimple"
+	FileService_UploadMultiple_FullMethodName   = "/f.FileService/UploadMultiple"
 	FileService_DownloadMultiple_FullMethodName = "/f.FileService/DownloadMultiple"
 	FileService_DownloadSimple_FullMethodName   = "/f.FileService/DownloadSimple"
 	FileService_List_FullMethodName             = "/f.FileService/List"
@@ -29,7 +30,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type FileServiceClient interface {
-	Upload(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadClient, error)
+	UploadSimple(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadSimpleClient, error)
+	UploadMultiple(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadMultipleClient, error)
 	DownloadMultiple(ctx context.Context, in *FileDownloadMultipleRequest, opts ...grpc.CallOption) (FileService_DownloadMultipleClient, error)
 	DownloadSimple(ctx context.Context, in *FileDownloadSimpleRequest, opts ...grpc.CallOption) (FileService_DownloadSimpleClient, error)
 	List(ctx context.Context, in *FilesListRequest, opts ...grpc.CallOption) (*FilesListResponse, error)
@@ -43,31 +45,66 @@ func NewFileServiceClient(cc grpc.ClientConnInterface) FileServiceClient {
 	return &fileServiceClient{cc}
 }
 
-func (c *fileServiceClient) Upload(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadClient, error) {
+func (c *fileServiceClient) UploadSimple(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadSimpleClient, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[0], FileService_Upload_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[0], FileService_UploadSimple_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &fileServiceUploadClient{ClientStream: stream}
+	x := &fileServiceUploadSimpleClient{ClientStream: stream}
 	return x, nil
 }
 
-type FileService_UploadClient interface {
+type FileService_UploadSimpleClient interface {
 	Send(*FileUploadRequest) error
 	CloseAndRecv() (*FileUploadResponse, error)
 	grpc.ClientStream
 }
 
-type fileServiceUploadClient struct {
+type fileServiceUploadSimpleClient struct {
 	grpc.ClientStream
 }
 
-func (x *fileServiceUploadClient) Send(m *FileUploadRequest) error {
+func (x *fileServiceUploadSimpleClient) Send(m *FileUploadRequest) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *fileServiceUploadClient) CloseAndRecv() (*FileUploadResponse, error) {
+func (x *fileServiceUploadSimpleClient) CloseAndRecv() (*FileUploadResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(FileUploadResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *fileServiceClient) UploadMultiple(ctx context.Context, opts ...grpc.CallOption) (FileService_UploadMultipleClient, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[1], FileService_UploadMultiple_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &fileServiceUploadMultipleClient{ClientStream: stream}
+	return x, nil
+}
+
+type FileService_UploadMultipleClient interface {
+	Send(*FileUploadRequest) error
+	CloseAndRecv() (*FileUploadResponse, error)
+	grpc.ClientStream
+}
+
+type fileServiceUploadMultipleClient struct {
+	grpc.ClientStream
+}
+
+func (x *fileServiceUploadMultipleClient) Send(m *FileUploadRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *fileServiceUploadMultipleClient) CloseAndRecv() (*FileUploadResponse, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -80,7 +117,7 @@ func (x *fileServiceUploadClient) CloseAndRecv() (*FileUploadResponse, error) {
 
 func (c *fileServiceClient) DownloadMultiple(ctx context.Context, in *FileDownloadMultipleRequest, opts ...grpc.CallOption) (FileService_DownloadMultipleClient, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[1], FileService_DownloadMultiple_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[2], FileService_DownloadMultiple_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +150,7 @@ func (x *fileServiceDownloadMultipleClient) Recv() (*FileDownloadMultipleRespons
 
 func (c *fileServiceClient) DownloadSimple(ctx context.Context, in *FileDownloadSimpleRequest, opts ...grpc.CallOption) (FileService_DownloadSimpleClient, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[2], FileService_DownloadSimple_FullMethodName, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &FileService_ServiceDesc.Streams[3], FileService_DownloadSimple_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +195,8 @@ func (c *fileServiceClient) List(ctx context.Context, in *FilesListRequest, opts
 // All implementations must embed UnimplementedFileServiceServer
 // for forward compatibility
 type FileServiceServer interface {
-	Upload(FileService_UploadServer) error
+	UploadSimple(FileService_UploadSimpleServer) error
+	UploadMultiple(FileService_UploadMultipleServer) error
 	DownloadMultiple(*FileDownloadMultipleRequest, FileService_DownloadMultipleServer) error
 	DownloadSimple(*FileDownloadSimpleRequest, FileService_DownloadSimpleServer) error
 	List(context.Context, *FilesListRequest) (*FilesListResponse, error)
@@ -169,8 +207,11 @@ type FileServiceServer interface {
 type UnimplementedFileServiceServer struct {
 }
 
-func (UnimplementedFileServiceServer) Upload(FileService_UploadServer) error {
-	return status.Errorf(codes.Unimplemented, "method Upload not implemented")
+func (UnimplementedFileServiceServer) UploadSimple(FileService_UploadSimpleServer) error {
+	return status.Errorf(codes.Unimplemented, "method UploadSimple not implemented")
+}
+func (UnimplementedFileServiceServer) UploadMultiple(FileService_UploadMultipleServer) error {
+	return status.Errorf(codes.Unimplemented, "method UploadMultiple not implemented")
 }
 func (UnimplementedFileServiceServer) DownloadMultiple(*FileDownloadMultipleRequest, FileService_DownloadMultipleServer) error {
 	return status.Errorf(codes.Unimplemented, "method DownloadMultiple not implemented")
@@ -194,25 +235,51 @@ func RegisterFileServiceServer(s grpc.ServiceRegistrar, srv FileServiceServer) {
 	s.RegisterService(&FileService_ServiceDesc, srv)
 }
 
-func _FileService_Upload_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(FileServiceServer).Upload(&fileServiceUploadServer{ServerStream: stream})
+func _FileService_UploadSimple_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(FileServiceServer).UploadSimple(&fileServiceUploadSimpleServer{ServerStream: stream})
 }
 
-type FileService_UploadServer interface {
+type FileService_UploadSimpleServer interface {
 	SendAndClose(*FileUploadResponse) error
 	Recv() (*FileUploadRequest, error)
 	grpc.ServerStream
 }
 
-type fileServiceUploadServer struct {
+type fileServiceUploadSimpleServer struct {
 	grpc.ServerStream
 }
 
-func (x *fileServiceUploadServer) SendAndClose(m *FileUploadResponse) error {
+func (x *fileServiceUploadSimpleServer) SendAndClose(m *FileUploadResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *fileServiceUploadServer) Recv() (*FileUploadRequest, error) {
+func (x *fileServiceUploadSimpleServer) Recv() (*FileUploadRequest, error) {
+	m := new(FileUploadRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _FileService_UploadMultiple_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(FileServiceServer).UploadMultiple(&fileServiceUploadMultipleServer{ServerStream: stream})
+}
+
+type FileService_UploadMultipleServer interface {
+	SendAndClose(*FileUploadResponse) error
+	Recv() (*FileUploadRequest, error)
+	grpc.ServerStream
+}
+
+type fileServiceUploadMultipleServer struct {
+	grpc.ServerStream
+}
+
+func (x *fileServiceUploadMultipleServer) SendAndClose(m *FileUploadResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *fileServiceUploadMultipleServer) Recv() (*FileUploadRequest, error) {
 	m := new(FileUploadRequest)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -294,8 +361,13 @@ var FileService_ServiceDesc = grpc.ServiceDesc{
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "Upload",
-			Handler:       _FileService_Upload_Handler,
+			StreamName:    "UploadSimple",
+			Handler:       _FileService_UploadSimple_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "UploadMultiple",
+			Handler:       _FileService_UploadMultiple_Handler,
 			ClientStreams: true,
 		},
 		{
