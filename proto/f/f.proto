@@ -4,8 +4,9 @@ package f;
 option go_package = "demetra.f.v1;fv1";
 
 message FileUploadRequest {
-  string file_name = 1;
-  bytes chunk = 2;
+  string key = 1;
+  uint64 size = 2;
+  bytes chunk = 3;
 }
 
 message FileUploadResponse {
@@ -33,11 +34,17 @@ message FileDownloadSimpleResponse {
 
 message FilesListRequest {
   string bucket = 1;
-  string key = 2;
+}
+
+message FileListElement {
+  bool uploaded = 1;
+  string name = 2;
+  string download_link = 3;
+  int64 size = 4;
 }
 
 message FilesListResponse {
-  repeated string link = 1;
+  repeated FileListElement list_elements = 1;
 }
 
 service FileService {
